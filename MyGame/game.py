@@ -16,22 +16,40 @@ gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("A Space Adventure")
 clock = pygame.time.Clock()
 
-shippImg = pygame.image.load('spaceShip.png')
+shippImg = pygame.image.load('Img/spaceShip.png')
 widthImg = 100
 heightImg = 185
+
+explodedImg = pygame.image.load('Img/boom.png')
+exWImg = 200
+exHImg = 200
+
+alienImg = pygame.image.load('Img/alien.png')
+alienWImg = 170
+alienHImg = 120
 
 crashed = False
 
 ship = pygame.transform.scale(shippImg, (widthImg,heightImg))
+explode = pygame.transform.scale(explodedImg,(exWImg, exHImg))
+alienB = pygame.transform.scale(alienImg,(alienWImg, alienHImg))
+
+def things_dodged(count):
+    font = pygame.font.SysFont(None, 25)
+    text = font.render("Dodged: "+str(count),True, white)
+    gameDisplay.blit(text,(0,0))
 
 def stars(thingx, thingy, thingw, thingh, color):
     pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
 
-def alien(thingx, thingy, thingw, thingh, color):
-    pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
+def alien(thingx, thingy):
+    gameDisplay.blit(alienB,(thingx,thingy))
 
 def spaceShip(x,y):
     gameDisplay.blit(ship,(x,y))
+
+def explotion(x,y):
+    gameDisplay.blit(explode,(x,y))
 
 def text_objects(text,font):
     textSurface = font.render(text, True, white)
@@ -69,8 +87,10 @@ def game_loop():
     alien_speed = 7
     alien_startx = random.randrange(0,display_width)
     alien_starty = -600
-    alien_width = 100
+    alien_width = 150
     alien_height = 100
+
+    dodged = 0
 
     gameExit = False
 
@@ -96,7 +116,7 @@ def game_loop():
 
         gameDisplay.fill(black)
 
-        alien(alien_startx, alien_starty, alien_width,alien_height, green)
+        alien(alien_startx, alien_starty)
         alien_starty += alien_speed
 
         #Loop for the stars on the background
@@ -112,10 +132,18 @@ def game_loop():
         if alien_starty > display_height:
             alien_starty = 0 - alien_height
             alien_startx = random.randrange(0, display_width)
+            dodged +=1
+
+        if y < alien_starty+alien_height:
+            if x > alien_startx and x < alien_startx + alien_width or x + widthImg > alien_startx and x + widthImg < alien_startx+alien_width:
+                explotion(x,y)
+                crash()
 
         spaceShip(x,y)
+        things_dodged(dodged)
 
         if x > display_width - widthImg or x < 0:
+            explotion(x,y)
             crash()
 
         pygame.display.update() #Updates the parameters on the method
