@@ -42,6 +42,9 @@ def things_dodged(count):
 def stars(thingx, thingy, thingw, thingh, color):
     pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
 
+def blast(thingx, thingy, thingw, thingh, color):
+    pygame.draw.rect(gameDisplay, color, [thingx, thingy, thingw, thingh])
+
 def alien(thingx, thingy):
     gameDisplay.blit(alienB,(thingx,thingy))
 
@@ -84,6 +87,11 @@ def game_loop():
     thing_width = 5
     thing_height = 5
 
+    blasts_List = []
+    blast_width = 5
+    blast_height = 15
+    blastSpeed = 10
+
     alien_speed = 7
     alien_startx = random.randrange(0,display_width)
     alien_starty = -600
@@ -105,6 +113,10 @@ def game_loop():
                     x_sum = -5
                 elif event.key == pygame.K_RIGHT:
                     x_sum = 5
+                elif event.key == pygame.K_UP:
+                    bullet_x = x + (widthImg / 2) - (blast_width/2)
+                    bullet_y = y
+                    blasts_List.append([bullet_x,bullet_y])
                 else:
                     x_sum = 0
             if event.type == pygame.KEYUP:
@@ -115,6 +127,13 @@ def game_loop():
         x += x_sum
 
         gameDisplay.fill(black)
+
+        for bullet in blasts_List[:]:
+            blast(bullet[0], bullet[1], blast_width, blast_height, red)
+            bullet[1] -= blastSpeed
+
+            if bullet[1] < 0 - blast_height:
+                blasts_List.remove(bullet)
 
         alien(alien_startx, alien_starty)
         alien_starty += alien_speed
