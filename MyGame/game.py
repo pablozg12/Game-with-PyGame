@@ -84,6 +84,14 @@ def game_loop():
         star_speed = random.randint(5,9) #Different speed
         stars_List.append([star_x,star_y, star_speed])
 
+    num_aliens = 1
+    aliens_List = [] 
+    for _ in range(num_aliens):
+        alien_x = random.randrange(0,display_width)
+        alien_y = random.randrange(0, display_height)
+        alien_speed = random.randint(5,9) #Different speed
+        aliens_List.append([alien_x,alien_y, star_speed])
+
     thing_width = 5
     thing_height = 5
 
@@ -92,9 +100,6 @@ def game_loop():
     blast_height = 15
     blastSpeed = 10
 
-    alien_speed = 7
-    alien_startx = random.randrange(0,display_width)
-    alien_starty = -600
     alien_width = 150
     alien_height = 100
 
@@ -134,9 +139,35 @@ def game_loop():
 
             if bullet[1] < 0 - blast_height:
                 blasts_List.remove(bullet)
+                continue
 
-        alien(alien_startx, alien_starty)
-        alien_starty += alien_speed
+            for alien_obj in aliens_List[:]:
+                if bullet[1] < alien_obj[1] + alien_height and bullet[1] + blast_height > alien_obj[1]:
+                    if bullet[0] < alien_obj[0] + alien_width and bullet[0] + blast_width > alien_obj[0]:
+                        explotion(alien_obj[0], alien_obj[1])
+
+                        if bullet in blasts_List:
+                            blasts_List.remove(bullet)
+                        aliens_List.remove(alien_obj)
+
+                        dodged+=1
+                        new_x = random.randrange(0, display_width - alien_width)
+                        new_speed = random.randint(5, 8)
+                        aliens_List.append([new_x, 0 - alien_height * 2, new_speed])
+
+        for alien_obj in aliens_List[:]:
+            alien(alien_obj[0],alien_obj[1])
+            alien_obj[1] += alien_obj[2]
+
+            if alien_obj[1] > display_height:
+                alien_obj[1] = 0 - alien_height
+                alien_obj[0] = random.randrange(0, display_width - alien_width)
+
+            if y < alien_obj[1] + alien_height and y + heightImg > alien_obj[1]:
+                if (x + widthImg > alien_obj[0] and x < alien_obj[0] + alien_width):
+                    explotion(x, y)
+                    crash()
+
 
         #Loop for the stars on the background
         for star in stars_List:
@@ -148,16 +179,8 @@ def game_loop():
                 star[1] = 0 - thing_height
                 star[0] = random.randrange(0, display_width)
 
-        if alien_starty > display_height:
-            alien_starty = 0 - alien_height
-            alien_startx = random.randrange(0, display_width)
-            dodged +=1
-
-        if y < alien_starty+alien_height:
-            if x > alien_startx and x < alien_startx + alien_width or x + widthImg > alien_startx and x + widthImg < alien_startx+alien_width:
-                explotion(x,y)
-                crash()
-
+        
+        
         spaceShip(x,y)
         things_dodged(dodged)
 
